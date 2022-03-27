@@ -1,19 +1,29 @@
-//build classes, conditiors 
-//
-//API in java 
+//hard example 
 
 public class Course {
+	//private global variables 
+	String ProfessorName;
+	String Cs_class;
+	int days;
+	String endTime;
+	String startTime;
 	
-	//	className 	string
-	//profname 	string
-	//days 		[5]int
-	//startTime   string
-	//endTime		string
-	
-	
-	//CS120 Wang MoTuThFr 9:55-10:50 
-	//CS120 Wang MoTuThFr 11:00-11:55
-	
+	//Constructor
+	//two string method
 	
 	
+	public Course(String ProfessorName2, String Cs_class, int days, String endTime2, String startTime2) {
+		this.Cs_class =  Cs_class;
+		this.startTime = startTime2;
+		this.endTime = endTime2;
+		this.days = days; 
+		this.ProfessorName = ProfessorName2; 
+		
+	}
+	
+	public String toString() {
+		return ProfessorName + " " + Cs_class + " " + days + " " + endTime + " " + startTime; 
+	}
 }
+
+	
