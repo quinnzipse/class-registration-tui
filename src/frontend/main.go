@@ -1,13 +1,13 @@
 package main
 
 import (
-  "fmt"
-  "strings"
-  "log"
-  "os"
+	"fmt"
+	"log"
+	"os"
+	"strings"
 
-  "github.com/charmbracelet/lipgloss"
-  tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -90,13 +90,13 @@ var (
 			BorderTop(true).
 			BorderForeground(subtle)
 
-  docStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	docStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
 )
 
-func main(){
+func main() {
 	doc := strings.Builder{}
 
-  // Tabs
+	// Tabs
 	{
 		row := lipgloss.JoinHorizontal(
 			lipgloss.Top,
@@ -108,107 +108,122 @@ func main(){
 		doc.WriteString(row + "\n\n")
 	}
 
-  fmt.Println(docStyle.Render(doc.String()))
+	fmt.Println(docStyle.Render(doc.String()))
 
-  // Create a new bubbletea program.
-  p := tea.NewProgram(initialModel())
-  if err := p.Start(); err != nil {
-    log.Fatal(err)
-    fmt.Println("Bummer, there's been an error:", err)
+	// Create a new bubbletea program.
+	p := tea.NewProgram(initialModel())
+	if err := p.Start(); err != nil {
+		log.Fatal(err)
+		fmt.Println("Bummer, there's been an error:", err)
 		os.Exit(1)
-  }
+	}
 }
 
 // Define what the model is. Aka what it's data types are.
 type model struct {
-  choices []course
-  cursor_location int 
-  selected map[int]struct{}
+	choices         []course
+	cursor_location int
+	selected        map[int]struct{}
 }
 
-type course struct{ 
-	courseName 	string
-	profName 	string
-	days 		[5]bool
-	startTime   string
-	endTime		string
+type course struct {
+	courseName string
+	profName   string
+	days       [5]bool
+	startTime  string
+	endTime    string
 }
 
 // What should the model initally look like
 func initialModel() model {
-	
-  return model {
-    choices: []course{course{"CS120", "Mitra", [5]bool{true, false, true, false, true}, "9:55", "10:50"}, course{"CS220", "SauppeA", [5]bool{true, false, true, false, true}, "11:00", "11:55"}},
-    selected: make(map[int]struct{}),
-  }
+
+	return model{
+		choices:  []course{course{"CS120", "Mitra", [5]bool{true, false, true, false, true}, "9:55", "10:50"}, course{"CS220", "SauppeA", [5]bool{true, false, true, false, true}, "11:00", "11:55"}},
+		selected: make(map[int]struct{}),
+	}
 }
 
 // Define any initial IO here.
 func (m model) Init() tea.Cmd {
-  return nil
+	return nil
 }
 
 // Describe how the state can change. Takes a msg; Returns a model and cmd
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){ 
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
-  // TODO: LEFT HERE https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
+	// TODO: LEFT HERE https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
 
-  // If a key was pressed...
-  switch msg := msg.(type) {
-  case tea.KeyMsg:
-    
-    switch msg.String() {
-    
-    case "ctrl+c", "q":
-      return m, tea.Quit
+	// If a key was pressed...
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
 
-    case "up", "k":
-      if m.cursor_location > 0 {
-        m.cursor_location--
-      }
-    
-    case "down", "j":
-      if m.cursor_location < len(m.choices)-1 {
-        m.cursor_location++
-      }
+		switch msg.String() {
 
-    case "enter", " ":
-      _, ok := m.selected[m.cursor_location]
-      if ok {
-        delete(m.selected, m.cursor_location)
-      } else {
-        m.selected[m.cursor_location] = struct{}{}
-      }
+		case "ctrl+c", "q":
+			return m, tea.Quit
 
-    }
-  }
+		case "up", "k":
+			if m.cursor_location > 0 {
+				m.cursor_location--
+			}
 
-  // return the MODIFIED model and nil (nop)
-  return m, nil
+		case "down", "j":
+			if m.cursor_location < len(m.choices)-1 {
+				m.cursor_location++
+			}
+
+		case "enter", " ":
+			_, ok := m.selected[m.cursor_location]
+			if ok {
+				delete(m.selected, m.cursor_location)
+			} else {
+				m.selected[m.cursor_location] = struct{}{}
+			}
+
+		}
+	}
+
+	// return the MODIFIED model and nil (nop)
+	return m, nil
 }
 
 func (m model) View() string {
-  s := "Welcome to the Class Registry!\n\n"
+	s := "Welcome to the Class Registry!\n\n"
 
-  for i, choice := range m.choices {
-    cursor := " "
-    if m.cursor_location == i {
-      cursor = ">"
-    }
+	for i, choice := range m.choices {
+		cursor := " "
+		if m.cursor_location == i {
+			cursor = ">"
+		}
 
-    checked := " "
-    if _, ok := m.selected[i]; ok {
-      checked = "✓"
-    }
+		checked := " "
+		if _, ok := m.selected[i]; ok {
+			checked = "✓"
+		}
 
-    // "render" the row
-    s += fmt.Sprintf("%s [%s] %s %s\n", cursor, checked, choice.courseName, choice.profName);
+		// "render" the row
+		s += fmt.Sprintf("%s [%s] %s %s\n", cursor, checked, choice.courseName, choice.profName)
 
-  }
+	}
 
-  s += "\nPress q to quit.\n"
+	selCourse := m.choices[m.cursor_location]
 
-  return s
+	s += "\n" + selCourse.courseName + " " + selCourse.profName + " " + genDaysStr(selCourse.days) + " " + selCourse.startTime + " " + selCourse.endTime + "\n"
+
+	s += "\nPress q to quit.\n"
+
+	return s
+}
+
+func genDaysStr(days [5]bool) string {
+	toReturn := strings.Builder{}
+	dayNames := [5]string{"Mo", "Tu", "We", "Th", "Fr"}
+	for i, day := range days {
+		if day {
+			toReturn.WriteString(dayNames[i])
+		}
+	}
+	return toReturn.String()
 }
 
 func max(a, b int) int {
