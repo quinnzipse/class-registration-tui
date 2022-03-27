@@ -90,25 +90,14 @@ var (
 			BorderTop(true).
 			BorderForeground(subtle)
 
-	docStyle = lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	docStyle  = lipgloss.NewStyle().Padding(1, 2, 1, 2)
+	helpStyle = lipgloss.NewStyle().
+			Foreground(subtle).
+			Italic(true).
+			MarginLeft(1)
 )
 
 func main() {
-	doc := strings.Builder{}
-
-	// Tabs
-	{
-		row := lipgloss.JoinHorizontal(
-			lipgloss.Top,
-			activeTab.Render("All Classes"),
-			tab.Render("Registered Classes"),
-		)
-		gap := tabGap.Render(strings.Repeat(" ", max(0, width-lipgloss.Width(row)-2)))
-		row = lipgloss.JoinHorizontal(lipgloss.Bottom, row, gap)
-		doc.WriteString(row + "\n\n")
-	}
-
-	fmt.Println(docStyle.Render(doc.String()))
 
 	// Create a new bubbletea program.
 	p := tea.NewProgram(initialModel())
@@ -124,6 +113,8 @@ type model struct {
 	choices         []course
 	cursor_location int
 	selected        map[int]struct{}
+	currTab         int
+	Quitting        bool
 }
 
 type course struct {
@@ -138,8 +129,10 @@ type course struct {
 func initialModel() model {
 
 	return model{
-		choices:  []course{course{"CS120", "Mitra", [5]bool{true, false, true, false, true}, "9:55", "10:50"}, course{"CS220", "SauppeA", [5]bool{true, false, true, false, true}, "11:00", "11:55"}},
-		selected: make(map[int]struct{}),
+		choices:         []course{{"CS120", "Mitra", [5]bool{true, false, true, false, true}, "9:55", "10:50"}, {"CS220", "SauppeA", [5]bool{true, false, true, false, true}, "11:00", "11:55"}},
+		selected:        make(map[int]struct{}),
+		cursor_location: 0,
+		currTab:         0,
 	}
 }
 
@@ -160,6 +153,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 
 		case "ctrl+c", "q":
+			m.Quitting = true
 			return m, tea.Quit
 
 		case "up", "k":
@@ -170,6 +164,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			if m.cursor_location < len(m.choices)-1 {
 				m.cursor_location++
+			}
+
+		case "tab":
+			if m.currTab == 1 {
+				m.currTab = 0
+			} else {
+				m.currTab = 1
 			}
 
 		case "enter", " ":
@@ -188,8 +189,64 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+
+	if m.Quitting {
+		return "\n See Ya! \n\n"
+	}
+
+	doc := strings.Builder{}
+
+	// Tabs
+	{
+		var row string
+		if m.currTab == 0 {
+			row = lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				activeTab.Render("For Students"),
+				tab.Render("For Profs"),
+			)
+		} else {
+			row = lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				tab.Render("For Students"),
+				activeTab.Render("For Profs"),
+			)
+		}
+		gap := tabGap.Render(strings.Repeat(" ", max(0, width-lipgloss.Width(row)-2)))
+		row = lipgloss.JoinHorizontal(lipgloss.Bottom, row, gap)
+		doc.WriteString(row)
+	}
+
 	s := "Welcome to the Class Registry!\n\n"
 
+	s += docStyle.Render(doc.String())
+
+	s += "\n"
+
+	if m.currTab == 0 {
+		s += m.renderStudentPage()
+	} else {
+		s += m.renderProfPage()
+	}
+
+	return s
+}
+
+func (m model) renderProfPage() string {
+	s := "Existing Courses:\n"
+	for _, course := range m.choices {
+		s += fmt.Sprintf("%s %s %s %s-%s\n", course.courseName, course.profName, genDaysStr(course.days), course.startTime, course.endTime)
+	}
+
+	// TODO: Add button to add a class
+
+	s += helpStyle.Render("\nPress q to quit.\n")
+
+	return s
+}
+
+func (m model) renderStudentPage() string {
+	s := ""
 	for i, choice := range m.choices {
 		cursor := " "
 		if m.cursor_location == i {
@@ -208,9 +265,9 @@ func (m model) View() string {
 
 	selCourse := m.choices[m.cursor_location]
 
-	s += "\n" + selCourse.courseName + " " + selCourse.profName + " " + genDaysStr(selCourse.days) + " " + selCourse.startTime + " " + selCourse.endTime + "\n"
+	s += "\n" + selCourse.courseName + " " + selCourse.profName + " " + genDaysStr(selCourse.days) + " " + selCourse.startTime + "-" + selCourse.endTime + "\n"
 
-	s += "\nPress q to quit.\n"
+	s += helpStyle.Render("\nPress q to quit.\n")
 
 	return s
 }
