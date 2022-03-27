@@ -8,7 +8,7 @@ public class Api{
     List<Professor> professorList = new ArrayList<Professor>();
 
     while(s.hasNextLine()){
-      String line = s.getNextLine();
+      String line = s.nextLine();
       String[] tokens = line.split(" ");
 
       switch(tokens[0]){
@@ -19,7 +19,12 @@ public class Api{
           break;
         
         case "add-class":
-          // name, professor, endtime, starttime, days
+
+          if(tokens.length < 6){
+            System.out.println("lol no.");
+            break;
+          }
+
           int[] dsow = new int[5];
           
           if(tokens[5].contains("Mo")) dsow[0] = 1;
