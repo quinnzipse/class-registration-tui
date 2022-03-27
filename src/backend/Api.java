@@ -5,10 +5,11 @@ public class Api{
     Scanner s = new Scanner(System.in);
 
     List<Course> courseList = new ArrayList<Course>();
-    List<Professor> professorList = new ArrayList<Professor>();
+    // List<Professor> professorList = new ArrayList<Professor>();
 
     while(s.hasNextLine()){
       String line = s.nextLine();
+      // System.out.println(line);
       String[] tokens = line.split(" ");
 
       switch(tokens[0]){
@@ -17,7 +18,8 @@ public class Api{
           courseList.forEach(c -> sb.append(c.toString()).append(" "));
           System.out.println("ok. " + sb.toString());
           break;
-        
+
+        // add-class Professor ClassName End-Time Start-Time DaysOfWeek        
         case "add-class":
 
           if(tokens.length < 6){
@@ -25,20 +27,33 @@ public class Api{
             break;
           }
 
-          int[] dsow = new int[5];
+          int dsow = 0;
           
-          if(tokens[5].contains("Mo")) dsow[0] = 1;
-          if(tokens[5].contains("Tu")) dsow[1] = 1;
-          if(tokens[5].contains("We")) dsow[2] = 1;
-          if(tokens[5].contains("Th")) dsow[3] = 1;
-          if(tokens[5].contains("Fr")) dsow[4] = 1;
+          if(tokens[5].contains("Mo")) dsow |= 1;
+          if(tokens[5].contains("Tu")) dsow |= 2;
+          if(tokens[5].contains("We")) dsow |= 4;
+          if(tokens[5].contains("Th")) dsow |= 8;
+          if(tokens[5].contains("Fr")) dsow |= 16;
 
-          Course c = new Course(tokens[1], tokens[2], tokens[3], tokens[4], dsow);
+          Course c = new Course(tokens[1], tokens[2], dsow, tokens[3], tokens[4]);
           courseList.add(c);
           System.out.println("ok.");
           break;
         case "delete-class":
-          boolean removed = courseList.remove(tokens[1]);
+          if(tokens.length < 2){
+            System.out.println("lol no.");
+            break;
+          }
+
+          Course remove_this_guy = null;
+          for(int i=0; i<courseList.size(); i++){
+              if(courseList.get(i).Cs_class.equals(tokens[1])){
+                remove_this_guy = courseList.get(i);
+                break;
+              }
+          }
+
+          boolean removed = courseList.remove(remove_this_guy);
 
           if(removed) System.out.println("ok.");
           else System.out.println("lol no.");
