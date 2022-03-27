@@ -40,7 +40,20 @@ public class Api{
           System.out.println("ok.");
           break;
         case "delete-class":
-          boolean removed = courseList.remove(tokens[1]);
+          if(tokens.length < 2){
+            System.out.println("lol no.");
+            break;
+          }
+
+          Course remove_this_guy = null;
+          for(int i=0; i<courseList.size(); i++){
+              if(courseList.get(i).Cs_class.equals(tokens[1])){
+                remove_this_guy = courseList.get(i);
+                break;
+              }
+          }
+
+          boolean removed = courseList.remove(remove_this_guy);
 
           if(removed) System.out.println("ok.");
           else System.out.println("lol no.");
