@@ -2,7 +2,10 @@ module github.com/quinnzipse/class-registration-tui
 
 go 1.18
 
-require github.com/charmbracelet/bubbletea v0.20.0
+require (
+	github.com/charmbracelet/bubbles v0.10.3
+	github.com/charmbracelet/bubbletea v0.20.0
+)
 
 require (
 	github.com/containerd/console v1.0.3 // indirect
