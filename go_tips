@@ -1,0 +1,5 @@
+To make a binary:
+  go build src/[src-file]
+
+To add more dependencies:
+  go mod tidy
