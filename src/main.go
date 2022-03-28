@@ -45,7 +45,7 @@ var (
 		Left:        "│",
 		Right:       "│",
 		TopLeft:     "╭",
-		TopRight:    "╮",
+                TopRight:    "╮",
 		BottomLeft:  "┘",
 		BottomRight: "└",
 	}
@@ -110,26 +110,18 @@ func main() {
 
 // Define what the model is. Aka what it's data types are.
 type model struct {
-	choices         []course
+	choices         []Course
 	cursor_location int
 	selected        map[int]struct{}
 	currTab         int
 	Quitting        bool
 }
 
-type course struct {
-	courseName string
-	profName   string
-	days       [5]bool
-	startTime  string
-	endTime    string
-}
-
 // What should the model initally look like
 func initialModel() model {
 
 	return model{
-		choices:         []course{{"CS120", "Mitra", [5]bool{true, false, true, false, true}, "9:55", "10:50"}, {"CS220", "SauppeA", [5]bool{true, false, true, false, true}, "11:00", "11:55"}},
+          choices:         []Course{{"CS120", "Intro to Java", "You learn Java while going through hell.", "Dr. Mitra", "9:55am", "10:50am", [5]bool{true, false, true, false, true}}, {"CS220", "Intermediate Java", "If CS120 didn't want to make you die, this will!", "SauppeA", "11:00pm", "11:55pm", [5]bool{true, false, true, false, true}}},
 		selected:        make(map[int]struct{}),
 		cursor_location: 0,
 		currTab:         0,
@@ -235,7 +227,7 @@ func (m model) View() string {
 func (m model) renderProfPage() string {
 	s := "Existing Courses:\n"
 	for _, course := range m.choices {
-		s += fmt.Sprintf("%s %s %s %s-%s\n", course.courseName, course.profName, genDaysStr(course.days), course.startTime, course.endTime)
+		s += fmt.Sprintf("%s %s %s %s-%s\n", course.CourseName, course.Professor, genDaysStr(course.Days), course.StartTime, course.EndTime)
 	}
 
 	// TODO: Add button to add a class
@@ -247,25 +239,27 @@ func (m model) renderProfPage() string {
 
 func (m model) renderStudentPage() string {
 	s := ""
+
+        s += helpStyle.Render(fmt.Sprintf(" %-8s\t%-40s\t%s", "Num", "Course Name", "Professor"))
+        s += "\n\n"
+
 	for i, choice := range m.choices {
 		cursor := " "
 		if m.cursor_location == i {
 			cursor = ">"
 		}
 
-		checked := " "
-		if _, ok := m.selected[i]; ok {
-			checked = "✓"
-		}
-
-		// "render" the row
-		s += fmt.Sprintf("%s [%s] %s %s\n", cursor, checked, choice.courseName, choice.profName)
+		s += fmt.Sprintf("%s %-8s\t%-40s\t%s\n", cursor, choice.CourseNumber, choice.CourseName, choice.Professor)
 
 	}
 
 	selCourse := m.choices[m.cursor_location]
 
-	s += "\n" + selCourse.courseName + " " + selCourse.profName + " " + genDaysStr(selCourse.days) + " " + selCourse.startTime + "-" + selCourse.endTime + "\n"
+        // TODO: Make this into an info box
+        s += "\n\n"
+        s += fmt.Sprintf("  %-40s\t%s\n", selCourse.CourseName, selCourse.Professor);
+        s += "\n  " + selCourse.CourseDescription
+        s += "\n\n   " + selCourse.StartTime + " to " + selCourse.EndTime + "\t\t  " + genDaysStr(selCourse.Days) + "\n\n"
 
 	s += helpStyle.Render("\nPress q to quit.\n")
 
